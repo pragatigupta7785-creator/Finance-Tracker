@@ -1,6 +1,3 @@
-"// Local Database Service using LocalStorage
-// Provides zero-setup CRUD operations and can easily be replaced by direct Supabase calls.
-
 const getStorageItem = (key, defaultValue) => {
   const item = localStorage.getItem(key);
   return item ? JSON.parse(item) : defaultValue;
@@ -10,7 +7,6 @@ const setStorageItem = (key, value) => {
   localStorage.setItem(key, JSON.stringify(value));
 };
 
-// Initial data states
 const DEFAULT_CATEGORIES = [
   { id: 'cat-1', name: 'Grocery', icon: 'shopping-bag', color: '#10b981' },
   { id: 'cat-2', name: 'Bills', icon: 'credit-card', color: '#3b82f6' },
@@ -51,5 +47,86 @@ export const db = {
     } else {
       all.unshift(transaction);
     }
-  
-<truncated 2764 bytes>
+    setStorageItem('apex_transactions', all);
+  },
+  deleteTransaction: (id) => {
+    const all = getStorageItem('apex_transactions', []);
+    const filtered = all.filter(t => t.id !== id);
+    setStorageItem('apex_transactions', filtered);
+  },
+
+  // Categories
+  getCategories: () => getStorageItem('apex_categories', DEFAULT_CATEGORIES),
+  saveCategory: (category) => {
+    const all = db.getCategories();
+    const idx = all.findIndex(c => c.id === category.id);
+    if (idx > -1) {
+      all[idx] = category;
+    } else {
+      all.push(category);
+    }
+    setStorageItem('apex_categories', all);
+  },
+  deleteCategory: (id) => {
+    const all = db.getCategories();
+    const filtered = all.filter(c => c.id !== id);
+    setStorageItem('apex_categories', filtered);
+  },
+
+  // Budgets
+  getBudgets: (userId) => {
+    const all = getStorageItem('apex_budgets', []);
+    return userId ? all.filter(b => b.userId === userId) : all;
+  },
+  saveBudget: (budget) => {
+    const all = getStorageItem('apex_budgets', []);
+    const idx = all.findIndex(b => b.userId === budget.userId && b.categoryId === budget.categoryId);
+    if (idx > -1) {
+      all[idx] = { ...all[idx], ...budget };
+    } else {
+      all.push(budget);
+    }
+    setStorageItem('apex_budgets', all);
+  },
+  deleteBudget: (id) => {
+    const all = getStorageItem('apex_budgets', []);
+    const filtered = all.filter(b => b.id !== id);
+    setStorageItem('apex_budgets', filtered);
+  },
+
+  // Loans (Borrow & Lend)
+  getLoans: (userId) => {
+    const all = getStorageItem('apex_loans', []);
+    return userId ? all.filter(l => l.userId === userId) : all;
+  },
+  saveLoan: (loan) => {
+    const all = getStorageItem('apex_loans', []);
+    const idx = all.findIndex(l => l.id === loan.id);
+    if (idx > -1) {
+      all[idx] = loan;
+    } else {
+      all.unshift(loan);
+    }
+    setStorageItem('apex_loans', all);
+  },
+
+  // CMS Settings
+  getCmsSettings: () => getStorageItem('apex_cms_settings', {
+    enableBiometrics: true,
+    enableBorrowLend: true,
+    enableRecurring: true,
+    enableExport: true,
+    dashboardBannerText: '🎉 Welcome to ApexFinance Admin Controlled Portal. Manage your parameters on the CMS panel!',
+    showDashboardBanner: true,
+    currencies: [
+      { code: 'USD', symbol: '$', rate: 1.0, format: 'en-US' },
+      { code: 'EUR', symbol: '€', rate: 0.92, format: 'de-DE' },
+      { code: 'GBP', symbol: '£', rate: 0.79, format: 'en-GB' },
+      { code: 'INR', symbol: '₹', rate: 83.5, format: 'en-IN' },
+      { code: 'JPY', symbol: '¥', rate: 155.2, format: 'ja-JP' }
+    ]
+  }),
+  saveCmsSettings: (settings) => {
+    setStorageItem('apex_cms_settings', settings);
+  }
+};

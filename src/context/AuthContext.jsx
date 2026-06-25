@@ -1,4 +1,4 @@
-"import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { db } from '../services/db';
 
 const AuthContext = createContext();
@@ -57,5 +57,13 @@ export const AuthProvider = ({ children }) => {
   const updateProfile = (updatedData) => {
     const profile = { ...currentUser, ...updatedData };
     db.saveProfile(profile);
-    setCurren
-<truncated 267 bytes>
+    setCurrentUser(profile);
+    localStorage.setItem('apex_current_user', JSON.stringify(profile));
+  };
+
+  return (
+    <AuthContext.Provider value={{ currentUser, loading, login, signup, logout, updateProfile }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};

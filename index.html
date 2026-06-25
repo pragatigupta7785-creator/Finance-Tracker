@@ -1,9 +1,9 @@
-"<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ApexFinance â€” Premium Personal Finance Dashboard</title>
+  <title>ApexFinance — Premium Personal Finance Dashboard</title>
   
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -59,5 +59,1605 @@
   </script>
 
   <!-- React and Chart.js CDNs -->
-  <script src="https://unpkg.com/react@18/umd/react.production.min.
-<truncated 102879 bytes>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #3f3f46;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #52525b;
+    }
+    
+    /* Neon Glows */
+    .glow-green {
+      box-shadow: 0 0 15px rgba(16, 185, 129, 0.15);
+    }
+    .glow-red {
+      box-shadow: 0 0 15px rgba(244, 63, 94, 0.15);
+    }
+    .glow-brand {
+      box-shadow: 0 0 25px rgba(16, 185, 129, 0.3);
+    }
+    .glassmorphism {
+      backdrop-filter: blur(12px);
+      background-color: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .dark .glassmorphism {
+      background-color: rgba(24, 24, 27, 0.7);
+      border: 1px solid rgba(63, 63, 70, 0.4);
+    }
+  </style>
+</head>
+<body class="bg-zinc-950 text-zinc-100 font-sans transition-colors duration-300">
+  
+  <div id="root"></div>
+
+  <!-- React code with Babel compiler -->
+  <script type="text/babel">
+    const { useState, useEffect, useRef, useMemo } = React;
+
+    // --- MOCK INITIAL DATA ---
+    const INITIAL_USERS = [
+      { id: '1', email: 'user@finance.com', name: 'Pragati Gupta', role: 'user', currency: 'USD', familyMembers: ['Self', 'Partner', 'Child'] },
+      { id: '2', email: 'admin@finance.com', name: 'System Admin', role: 'admin', currency: 'USD', familyMembers: ['Self'] }
+    ];
+
+    const DEFAULT_CATEGORIES = [
+      { id: 'cat-1', name: 'Grocery', icon: 'shopping-bag', color: '#10b981' },
+      { id: 'cat-2', name: 'Bills', icon: 'credit-card', color: '#3b82f6' },
+      { id: 'cat-3', name: 'Personal', icon: 'user', color: '#8b5cf6' },
+      { id: 'cat-4', name: 'Travel', icon: 'map-pin', color: '#f59e0b' },
+      { id: 'cat-5', name: 'Shopping', icon: 'tag', color: '#ec4899' },
+      { id: 'cat-6', name: 'Medical', icon: 'activity', color: '#ef4444' },
+      { id: 'cat-7', name: 'Education', icon: 'book-open', color: '#6366f1' },
+      { id: 'cat-8', name: 'Entertainment', icon: 'film', color: '#a855f7' },
+      { id: 'cat-9', name: 'Investments', icon: 'trending-up', color: '#06b6d4' },
+      { id: 'cat-10', name: 'Other', icon: 'help-circle', color: '#71717a' }
+    ];
+
+    const INITIAL_TRANSACTIONS = [
+      { id: 't-1', userId: '1', type: 'income', amount: 5000, categoryId: 'cat-3', date: '2026-06-01', notes: 'Monthly Main Salary', familyMember: 'Self', isRecurring: true, frequency: 'monthly', tags: ['Salary', 'Primary'] },
+      { id: 't-2', userId: '1', type: 'income', amount: 850, categoryId: 'cat-9', date: '2026-06-05', notes: 'Stock Dividends', familyMember: 'Self', isRecurring: false, frequency: 'none', tags: ['Investments'] },
+      { id: 't-3', userId: '1', type: 'expense', amount: 280, categoryId: 'cat-1', date: '2026-06-10', notes: 'Weekly grocery run at Whole Foods', familyMember: 'Partner', isRecurring: false, frequency: 'none', tags: ['Food'] },
+      { id: 't-4', userId: '1', type: 'expense', amount: 150, categoryId: 'cat-2', date: '2026-06-12', notes: 'Electricity bill payment', familyMember: 'Self', isRecurring: true, frequency: 'monthly', tags: ['Bills'] },
+      { id: 't-5', userId: '1', type: 'expense', amount: 90, categoryId: 'cat-5', date: '2026-06-14', notes: 'Running shoes from Nike', familyMember: 'Self', isRecurring: false, frequency: 'none', tags: ['Gear'] },
+      { id: 't-6', userId: '1', type: 'expense', amount: 450, categoryId: 'cat-4', date: '2026-06-15', notes: 'Weekend flight booking', familyMember: 'Self', isRecurring: false, frequency: 'none', tags: ['Travel', 'Weekend'] },
+      { id: 't-7', userId: '1', type: 'expense', amount: 120, categoryId: 'cat-8', date: '2026-06-17', notes: 'Premium Concert ticket', familyMember: 'Child', isRecurring: false, frequency: 'none', tags: ['Music'] },
+      { id: 't-8', userId: '1', type: 'expense', amount: 75, categoryId: 'cat-6', date: '2026-06-18', notes: 'Pharmacy prescription refill', familyMember: 'Self', isRecurring: false, frequency: 'none', tags: ['Health'] }
+    ];
+
+    const INITIAL_BUDGETS = [
+      { id: 'b-1', userId: '1', categoryId: 'cat-1', limitAmount: 400 },
+      { id: 'b-2', userId: '1', categoryId: 'cat-2', limitAmount: 300 },
+      { id: 'b-3', userId: '1', categoryId: 'cat-5', limitAmount: 200 },
+      { id: 'b-4', userId: '1', categoryId: 'cat-8', limitAmount: 150 }
+    ];
+
+    const INITIAL_LOANS = [
+      { id: 'l-1', userId: '1', type: 'lend', personName: 'Sarah Jenkins', amount: 350, dueDate: '2026-06-25', notes: 'Shared Airbnb expenses', status: 'pending' },
+      { id: 'l-2', userId: '1', type: 'borrow', personName: 'Robert Dow', amount: 120, dueDate: '2026-06-15', notes: 'Dinner bill split', status: 'overdue' },
+      { id: 'l-3', userId: '1', type: 'lend', personName: 'Sam K.', amount: 500, dueDate: '2026-06-10', notes: 'Laptop loan helper', status: 'paid' }
+    ];
+
+    const DEFAULT_CMS_SETTINGS = {
+      enableBiometrics: true,
+      enableBorrowLend: true,
+      enableRecurring: true,
+      enableExport: true,
+      dashboardBannerText: '🎉 Welcome to ApexFinance Admin Controlled Portal. Manage your parameters on the CMS panel!',
+      showDashboardBanner: true,
+      currencies: [
+        { code: 'USD', symbol: '$', rate: 1.0, format: 'en-US' },
+        { code: 'EUR', symbol: '€', rate: 0.92, format: 'de-DE' },
+        { code: 'GBP', symbol: '£', rate: 0.79, format: 'en-GB' },
+        { code: 'INR', symbol: '₹', rate: 83.5, format: 'en-IN' },
+        { code: 'JPY', symbol: '¥', rate: 155.2, format: 'ja-JP' }
+      ]
+    };
+
+    // --- REACT APP COMPONENT ---
+    function App() {
+      // States
+      const [users, setUsers] = useState(() => JSON.parse(localStorage.getItem('apex_users')) || INITIAL_USERS);
+      const [currentUser, setCurrentUser] = useState(() => JSON.parse(localStorage.getItem('apex_current_user')) || null);
+      const [categories, setCategories] = useState(() => JSON.parse(localStorage.getItem('apex_categories')) || DEFAULT_CATEGORIES);
+      const [transactions, setTransactions] = useState(() => JSON.parse(localStorage.getItem('apex_transactions')) || INITIAL_TRANSACTIONS);
+      const [budgets, setBudgets] = useState(() => JSON.parse(localStorage.getItem('apex_budgets')) || INITIAL_BUDGETS);
+      const [loans, setLoans] = useState(() => JSON.parse(localStorage.getItem('apex_loans')) || INITIAL_LOANS);
+      const [cmsSettings, setCmsSettings] = useState(() => JSON.parse(localStorage.getItem('apex_cms_settings')) || DEFAULT_CMS_SETTINGS);
+      const [theme, setTheme] = useState(() => localStorage.getItem('apex_theme') || 'dark');
+      const [currentView, setCurrentView] = useState('landing'); // landing, login, signup, forgot, biometric, dashboard, etc.
+      
+      // UI Modals / Helper states
+      const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+      const [notifications, setNotifications] = useState([]);
+      const [currencyCode, setCurrencyCode] = useState('USD');
+      const [showAddTransactionModal, setShowAddTransactionModal] = useState(false);
+      const [showAddBudgetModal, setShowAddBudgetModal] = useState(false);
+      const [showAddLoanModal, setShowAddLoanModal] = useState(false);
+      const [showPrintModal, setShowPrintModal] = useState(false);
+      
+      // Face ID Scanner simulation
+      const [scanState, setScanState] = useState('idle'); // idle, scanning, success, error
+
+      // Synchronize state with LocalStorage
+      useEffect(() => {
+        localStorage.setItem('apex_users', JSON.stringify(users));
+      }, [users]);
+      useEffect(() => {
+        localStorage.setItem('apex_current_user', JSON.stringify(currentUser));
+        if (currentUser) {
+          setCurrencyCode(currentUser.currency || 'USD');
+        }
+      }, [currentUser]);
+      useEffect(() => {
+        localStorage.setItem('apex_categories', JSON.stringify(categories));
+      }, [categories]);
+      useEffect(() => {
+        localStorage.setItem('apex_transactions', JSON.stringify(transactions));
+      }, [transactions]);
+      useEffect(() => {
+        localStorage.setItem('apex_budgets', JSON.stringify(budgets));
+      }, [budgets]);
+      useEffect(() => {
+        localStorage.setItem('apex_loans', JSON.stringify(loans));
+      }, [loans]);
+      useEffect(() => {
+        localStorage.setItem('apex_cms_settings', JSON.stringify(cmsSettings));
+      }, [cmsSettings]);
+      useEffect(() => {
+        localStorage.setItem('apex_theme', theme);
+        if (theme === 'dark') {
+          document.documentElement.classList.add('dark');
+          document.body.classList.remove('bg-zinc-50', 'text-zinc-900');
+          document.body.classList.add('bg-zinc-950', 'text-zinc-100');
+        } else {
+          document.documentElement.classList.remove('dark');
+          document.body.classList.remove('bg-zinc-950', 'text-zinc-100');
+          document.body.classList.add('bg-zinc-50', 'text-zinc-900');
+        }
+      }, [theme]);
+
+      // Dynamic currency calculation
+      const currentCurrency = useMemo(() => {
+        return cmsSettings.currencies.find(c => c.code === currencyCode) || { code: 'USD', symbol: '$', rate: 1.0, format: 'en-US' };
+      }, [currencyCode, cmsSettings]);
+
+      const formatVal = (amountUSD) => {
+        const converted = amountUSD * currentCurrency.rate;
+        return new Intl.NumberFormat(currentCurrency.format, {
+          style: 'currency',
+          currency: currentCurrency.code,
+        }).format(converted);
+      };
+
+      // Realtime notification generator based on budget limits and overdue loans
+      useEffect(() => {
+        if (!currentUser) return;
+        const newAlerts = [];
+        
+        // Check budgets
+        budgets.forEach(budget => {
+          if (budget.userId !== currentUser.id) return;
+          const category = categories.find(c => c.id === budget.categoryId);
+          if (!category) return;
+          
+          const totalSpent = transactions
+            .filter(t => t.userId === currentUser.id && t.type === 'expense' && t.categoryId === budget.categoryId)
+            .reduce((sum, t) => sum + t.amount, 0);
+          
+          const percentage = (totalSpent / budget.limitAmount) * 100;
+          if (percentage >= 100) {
+            newAlerts.push({
+              id: `b-alert-100-${budget.id}`,
+              type: 'critical',
+              title: `Budget Limit Exceeded: ${category.name}`,
+              message: `You spent ${formatVal(totalSpent)} out of ${formatVal(budget.limitAmount)} (${percentage.toFixed(0)}%)`
+            });
+          } else if (percentage >= 90) {
+            newAlerts.push({
+              id: `b-alert-90-${budget.id}`,
+              type: 'warning',
+              title: `Budget Warning (90%): ${category.name}`,
+              message: `You spent ${formatVal(totalSpent)} out of ${formatVal(budget.limitAmount)}`
+            });
+          } else if (percentage >= 80) {
+            newAlerts.push({
+              id: `b-alert-80-${budget.id}`,
+              type: 'info',
+              title: `Budget Notice (80%): ${category.name}`,
+              message: `Approaching limit. Spent ${formatVal(totalSpent)} of ${formatVal(budget.limitAmount)}`
+            });
+          }
+        });
+
+        // Check overdue loans
+        loans.forEach(loan => {
+          if (loan.userId !== currentUser.id) return;
+          if (loan.status === 'pending') {
+            const isOverdue = new Date(loan.dueDate) < new Date();
+            if (isOverdue) {
+              newAlerts.push({
+                id: `l-overdue-${loan.id}`,
+                type: 'critical',
+                title: `Overdue Loan Reminder`,
+                message: `${loan.type === 'borrow' ? 'Repayment to' : 'Collection from'} ${loan.personName} of ${formatVal(loan.amount)} was due on ${loan.dueDate}.`
+              });
+            }
+          }
+        });
+
+        setNotifications(newAlerts);
+      }, [transactions, budgets, loans, categories, currentUser, currencyCode]);
+
+      // Main dashboard statistics
+      const stats = useMemo(() => {
+        if (!currentUser) return { income: 0, expenses: 0, savings: 0, borrow: 0, lend: 0, savingsPercent: 0 };
+        
+        const userT = transactions.filter(t => t.userId === currentUser.id);
+        const income = userT.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+        const expenses = userT.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+        const savings = income - expenses;
+        const savingsPercent = income > 0 ? (savings / income) * 100 : 0;
+        
+        const userL = loans.filter(l => l.userId === currentUser.id && l.status !== 'paid');
+        const borrow = userL.filter(l => l.type === 'borrow').reduce((sum, l) => sum + l.amount, 0);
+        const lend = userL.filter(l => l.type === 'lend').reduce((sum, l) => sum + l.amount, 0);
+
+        return { income, expenses, savings, borrow, lend, savingsPercent };
+      }, [transactions, loans, currentUser]);
+
+      // Dynamic Theme Switcher
+      const toggleTheme = () => setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+
+      // Biometrics Simulation Trigger
+      const runBiometricScan = () => {
+        setScanState('scanning');
+        setTimeout(() => {
+          // Success case
+          setScanState('success');
+          setTimeout(() => {
+            const demoUser = users.find(u => u.role === 'user');
+            setCurrentUser(demoUser);
+            setCurrentView('dashboard');
+            setScanState('idle');
+          }, 1200);
+        }, 2200);
+      };
+
+      // Form Handling Mock Methods
+      const handleLogin = (e) => {
+        e.preventDefault();
+        const email = e.target.email.value;
+        const password = e.target.password.value;
+        
+        const foundUser = users.find(u => u.email === email);
+        if (foundUser) {
+          setCurrentUser(foundUser);
+          if (foundUser.role === 'admin') {
+            setCurrentView('admin-cms');
+          } else {
+            setCurrentView('dashboard');
+          }
+        } else {
+          alert('Invalid email or password. Use: user@finance.com / admin@finance.com');
+        }
+      };
+
+      const handleAddTransaction = (e) => {
+        e.preventDefault();
+        const type = e.target.type.value;
+        const amount = parseFloat(e.target.amount.value);
+        const categoryId = e.target.categoryId.value;
+        const date = e.target.date.value;
+        const notes = e.target.notes.value;
+        const familyMember = e.target.familyMember.value;
+        const isRecurring = e.target.isRecurring?.checked || false;
+        const frequency = isRecurring ? e.target.frequency.value : 'none';
+        const tags = e.target.tags.value.split(',').map(t => t.trim()).filter(t => t.length > 0);
+
+        const newT = {
+          id: `t-${Date.now()}`,
+          userId: currentUser.id,
+          type,
+          amount,
+          categoryId,
+          date,
+          notes,
+          familyMember,
+          isRecurring,
+          frequency,
+          tags
+        };
+
+        setTransactions([newT, ...transactions]);
+        setShowAddTransactionModal(false);
+      };
+
+      const handleAddBudget = (e) => {
+        e.preventDefault();
+        const categoryId = e.target.categoryId.value;
+        const limitAmount = parseFloat(e.target.limitAmount.value);
+
+        // Check if budget already exists for this category
+        const existingIndex = budgets.findIndex(b => b.userId === currentUser.id && b.categoryId === categoryId);
+        if (existingIndex > -1) {
+          const updated = [...budgets];
+          updated[existingIndex].limitAmount = limitAmount;
+          setBudgets(updated);
+        } else {
+          const newB = {
+            id: `b-${Date.now()}`,
+            userId: currentUser.id,
+            categoryId,
+            limitAmount
+          };
+          setBudgets([...budgets, newB]);
+        }
+        setShowAddBudgetModal(false);
+      };
+
+      const handleAddLoan = (e) => {
+        e.preventDefault();
+        const type = e.target.type.value;
+        const personName = e.target.personName.value;
+        const amount = parseFloat(e.target.amount.value);
+        const dueDate = e.target.dueDate.value;
+        const notes = e.target.notes.value;
+
+        const newL = {
+          id: `l-${Date.now()}`,
+          userId: currentUser.id,
+          type,
+          personName,
+          amount,
+          dueDate,
+          notes,
+          status: 'pending'
+        };
+
+        setLoans([newL, ...loans]);
+        setShowAddLoanModal(false);
+      };
+
+      const exportToExcel = () => {
+        if (!currentUser) return;
+        const userT = transactions.filter(t => t.userId === currentUser.id);
+        
+        let csvContent = "data:text/csv;charset=utf-8,";
+        csvContent += "ID,Type,Amount (USD),Category,Date,Family Member,Notes,Tags,Recurring\n";
+        
+        userT.forEach(t => {
+          const cat = categories.find(c => c.id === t.categoryId)?.name || 'Other';
+          const tagStr = t.tags ? t.tags.join(';') : '';
+          csvContent += `"${t.id}","${t.type}",${t.amount},"${cat}","${t.date}","${t.familyMember}","${t.notes}","${tagStr}","${t.isRecurring ? t.frequency : 'no'}"\n`;
+        });
+        
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `apexfinance_report_${currentUser.name.replace(' ', '_')}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      };
+
+      // --- CHART RENDER ENGINE ---
+      const chartRef = useRef(null);
+      const chartInstanceRef = useRef(null);
+
+      useEffect(() => {
+        if (chartRef.current && (currentView === 'dashboard' || currentView === 'expenses')) {
+          if (chartInstanceRef.current) {
+            chartInstanceRef.current.destroy();
+          }
+
+          const ctx = chartRef.current.getContext('2d');
+          const userT = transactions.filter(t => t.userId === currentUser.id);
+          
+          // Group by category for visual graph
+          const categoriesSpent = {};
+          userT.filter(t => t.type === 'expense').forEach(t => {
+            const cat = categories.find(c => c.id === t.categoryId)?.name || 'Other';
+            categoriesSpent[cat] = (categoriesSpent[cat] || 0) + t.amount;
+          });
+
+          const labels = Object.keys(categoriesSpent);
+          const data = Object.values(categoriesSpent);
+          const colors = labels.map(label => {
+            const cat = categories.find(c => c.name === label);
+            return cat ? cat.color : '#71717a';
+          });
+
+          chartInstanceRef.current = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+              labels: labels.length > 0 ? labels : ['No Expenses Yet'],
+              datasets: [{
+                data: data.length > 0 ? data : [1],
+                backgroundColor: data.length > 0 ? colors : ['#3f3f46'],
+                borderWidth: 0,
+                hoverOffset: 4
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  position: 'bottom',
+                  labels: {
+                    color: theme === 'dark' ? '#d4d4d8' : '#27272a',
+                    font: {
+                      family: 'Plus Jakarta Sans',
+                      size: 11
+                    }
+                  }
+                }
+              },
+              cutout: '70%'
+            }
+          });
+        }
+      }, [transactions, categories, currentUser, currentView, theme]);
+
+      // --- INLINE SVG UTILS FOR ICON RENDER ---
+      const renderIcon = (name, className = "w-5 h-5") => {
+        const svgMap = {
+          'shopping-bag': <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>,
+          'credit-card': <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>,
+          'user': <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>,
+          'map-pin': <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>,
+          'tag': <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M7 7h.01M6 20h.01m0-14H18a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2z" /></svg>,
+          'activity': <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+          'book-open': <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>,
+          'film': <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" /></svg>,
+          'trending-up': <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>,
+          'help-circle': <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+          'plus': <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>,
+          'trash': <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>,
+          'edit': <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+        };
+        return svgMap[name] || svgMap['help-circle'];
+      };
+
+      // Navigation handler helper
+      const renderNavbar = () => {
+        return (
+          <header className="sticky top-0 z-30 flex items-center justify-between px-6 py-4 border-b border-zinc-200/80 bg-white/70 dark:bg-zinc-950/70 dark:border-zinc-800/80 backdrop-blur-md">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-600 to-brand-500 text-white font-bold text-lg font-display shadow-lg shadow-brand-500/20">A</div>
+              <span className="font-display font-bold text-lg tracking-tight hidden md:inline-block">Apex<span className="text-brand-500">Finance</span></span>
+              {currentUser?.role === 'admin' && <span className="px-2 py-0.5 text-xs font-semibold rounded bg-purple-500/10 text-purple-400 border border-purple-500/20 ml-2">CMS Admin</span>}
+            </div>
+
+            {/* Sub-menu Navigation Links (Desktop) */}
+            {currentUser && (
+              <nav className="hidden lg:flex items-center gap-1 text-sm font-medium">
+                {currentUser.role === 'admin' ? (
+                  <button onClick={() => setCurrentView('admin-cms')} className={`px-4 py-2 rounded-lg transition ${currentView === 'admin-cms' ? 'bg-zinc-200 dark:bg-zinc-800 text-brand-600 dark:text-brand-500' : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'}`}>CMS Dashboard</button>
+                ) : (
+                  <>
+                    <button onClick={() => setCurrentView('dashboard')} className={`px-4 py-2 rounded-lg transition ${currentView === 'dashboard' ? 'bg-zinc-200 dark:bg-zinc-800 text-brand-600 dark:text-brand-500 font-semibold' : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'}`}>Dashboard</button>
+                    <button onClick={() => setCurrentView('expenses')} className={`px-4 py-2 rounded-lg transition ${currentView === 'expenses' ? 'bg-zinc-200 dark:bg-zinc-800 text-brand-600 dark:text-brand-500 font-semibold' : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'}`}>Transactions</button>
+                    <button onClick={() => setCurrentView('budgets')} className={`px-4 py-2 rounded-lg transition ${currentView === 'budgets' ? 'bg-zinc-200 dark:bg-zinc-800 text-brand-600 dark:text-brand-500 font-semibold' : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'}`}>Budgets</button>
+                    {cmsSettings.enableBorrowLend && (
+                      <button onClick={() => setCurrentView('borrow-lend')} className={`px-4 py-2 rounded-lg transition ${currentView === 'borrow-lend' ? 'bg-zinc-200 dark:bg-zinc-800 text-brand-600 dark:text-brand-500 font-semibold' : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'}`}>Lend & Borrow</button>
+                    )}
+                  </>
+                )}
+              </nav>
+            )}
+
+            <div className="flex items-center gap-3">
+              {/* Currency Selector */}
+              {currentUser && (
+                <select 
+                  value={currencyCode} 
+                  onChange={(e) => setCurrencyCode(e.target.value)}
+                  className="bg-zinc-100 dark:bg-zinc-800 text-xs font-semibold px-2 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 outline-none"
+                >
+                  {cmsSettings.currencies.map(c => <option key={c.code} value={c.code}>{c.code} ({c.symbol})</option>)}
+                </select>
+              )}
+
+              {/* Theme Toggle */}
+              <button onClick={toggleTheme} className="p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 transition">
+                {theme === 'dark' ? (
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m12.728 12.728l.707.707M12 8a4 4 0 100 8 4 4 0 000-8z" /></svg>
+                ) : (
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
+                )}
+              </button>
+
+              {/* In-app Notification center */}
+              {currentUser && (
+                <div className="relative">
+                  <button onClick={() => setIsNotificationOpen(!isNotificationOpen)} className="p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 transition relative">
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
+                    {notifications.length > 0 && <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-rose-500 rounded-full border-2 border-white dark:border-zinc-950"></span>}
+                  </button>
+
+                  {isNotificationOpen && (
+                    <div className="absolute right-0 mt-2 w-80 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xl p-4 z-50">
+                      <div className="flex items-center justify-between pb-2 border-b border-zinc-200 dark:border-zinc-800">
+                        <span className="font-semibold text-sm">System Alerts</span>
+                        <span className="text-xs bg-brand-500/10 text-brand-500 px-2 py-0.5 rounded-full">{notifications.length} Unresolved</span>
+                      </div>
+                      <div className="mt-2 space-y-2 max-h-60 overflow-y-auto">
+                        {notifications.length === 0 ? (
+                          <p className="text-xs text-zinc-500 text-center py-4">All alerts clear. Healthy financial standing! 👍</p>
+                        ) : (
+                          notifications.map((n, idx) => (
+                            <div key={idx} className={`p-2.5 rounded-lg border text-xs ${n.type === 'critical' ? 'bg-red-500/10 text-red-400 border-red-500/20' : n.type === 'warning' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-blue-500/10 text-blue-400 border-blue-500/20'}`}>
+                              <h4 className="font-semibold mb-0.5">{n.title}</h4>
+                              <p className="opacity-90">{n.message}</p>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* User Dropdown */}
+              {currentUser ? (
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-brand-600 text-white flex items-center justify-center font-bold text-xs uppercase shadow">
+                    {currentUser.name.substring(0, 2)}
+                  </div>
+                  <button onClick={() => { setCurrentUser(null); setCurrentView('landing'); }} className="hidden sm:inline-block text-xs font-semibold hover:text-rose-500 transition">Logout</button>
+                </div>
+              ) : (
+                <button onClick={() => setCurrentView('login')} className="px-4 py-2 text-xs font-semibold rounded-lg bg-brand-600 hover:bg-brand-700 text-white transition glow-brand">Sign In</button>
+              )}
+            </div>
+          </header>
+        );
+      };
+
+      // Bottom navigation (Mobile only)
+      const renderBottomNav = () => {
+        if (!currentUser || currentUser.role === 'admin') return null;
+        return (
+          <div className="lg:hidden fixed bottom-0 left-0 right-0 z-30 bg-white dark:bg-zinc-950 border-t border-zinc-200/80 dark:border-zinc-800/80 py-2 px-4 flex justify-around text-xs font-medium backdrop-blur-md">
+            <button onClick={() => setCurrentView('dashboard')} className={`flex flex-col items-center gap-1 ${currentView === 'dashboard' ? 'text-brand-500' : 'text-zinc-400'}`}>
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z" /></svg>
+              <span>Dashboard</span>
+            </button>
+            <button onClick={() => setCurrentView('expenses')} className={`flex flex-col items-center gap-1 ${currentView === 'expenses' ? 'text-brand-500' : 'text-zinc-400'}`}>
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              <span>Ledger</span>
+            </button>
+            <button onClick={() => setCurrentView('budgets')} className={`flex flex-col items-center gap-1 ${currentView === 'budgets' ? 'text-brand-500' : 'text-zinc-400'}`}>
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" /><path strokeLinecap="round" strokeLinejoin="round" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" /></svg>
+              <span>Budgets</span>
+            </button>
+            {cmsSettings.enableBorrowLend && (
+              <button onClick={() => setCurrentView('borrow-lend')} className={`flex flex-col items-center gap-1 ${currentView === 'borrow-lend' ? 'text-brand-500' : 'text-zinc-400'}`}>
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <span>Loans</span>
+              </button>
+            )}
+          </div>
+        );
+      };
+
+      return (
+        <div className="min-h-screen flex flex-col transition-colors duration-300">
+          
+          {/* Top Banner Alert (managed by Admin CMS) */}
+          {cmsSettings.showDashboardBanner && currentUser && (
+            <div className="bg-brand-600 text-white text-xs py-2 px-4 flex items-center justify-between gap-2 shadow-sm font-semibold tracking-wide">
+              <span className="mx-auto flex items-center gap-2">
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" /></svg>
+                {cmsSettings.dashboardBannerText}
+              </span>
+            </div>
+          )}
+
+          {renderNavbar()}
+
+          {/* MAIN CONTAINER */}
+          <main className="flex-1 w-full max-w-7xl mx-auto px-4 md:px-6 py-6 pb-24 md:pb-8">
+            
+            {/* VIEW 1: LANDING/MARKETING PAGE */}
+            {currentView === 'landing' && (
+              <div className="flex flex-col items-center py-12 md:py-20 text-center animate-fade-in">
+                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-500/10 text-brand-500 text-xs font-semibold tracking-wide border border-brand-500/20 mb-6 uppercase">
+                  ✨ Smarter Personal Finance Management
+                </div>
+                <h1 className="font-display text-4xl md:text-6xl font-bold tracking-tight mb-6 max-w-3xl leading-tight">
+                  Take Control of Your Money. <br />
+                  <span className="bg-gradient-to-r from-brand-500 via-emerald-400 to-teal-400 bg-clip-text text-transparent">No Code, Zero Hassle.</span>
+                </h1>
+                <p className="text-zinc-500 dark:text-zinc-400 text-base md:text-lg max-w-xl mb-8 leading-relaxed">
+                  Real-time budget limit alerts, seamless multi-currency support, visual categories tracking, family sharing logs, and a powerful dashboard control panel.
+                </p>
+                
+                <div className="flex flex-wrap items-center justify-center gap-4 mb-16">
+                  <button onClick={() => setCurrentView('login')} className="px-6 py-3 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-medium shadow-xl shadow-brand-500/20 hover:scale-[1.02] active:scale-[0.98] transition">
+                    Get Started Instantly
+                  </button>
+                  <button onClick={() => {
+                    const adminUser = users.find(u => u.role === 'admin');
+                    setCurrentUser(adminUser);
+                    setCurrentView('admin-cms');
+                  }} className="px-6 py-3 rounded-xl bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 font-medium transition">
+                    Try Admin CMS Panel
+                  </button>
+                </div>
+
+                {/* Money Vector Illustration Mockup */}
+                <div className="w-full max-w-3xl rounded-2xl overflow-hidden glassmorphism p-4 border border-zinc-200/50 dark:border-zinc-800/80 shadow-2xl relative">
+                  <div className="absolute top-2 left-2 flex gap-1.5">
+                    <span className="w-3 h-3 rounded-full bg-red-500"></span>
+                    <span className="w-3 h-3 rounded-full bg-yellow-500"></span>
+                    <span className="w-3 h-3 rounded-full bg-green-500"></span>
+                  </div>
+                  <div className="pt-6 flex flex-col md:flex-row items-center gap-6 text-left">
+                    <div className="flex-1 space-y-4">
+                      <div className="h-6 w-32 bg-zinc-300 dark:bg-zinc-800 rounded"></div>
+                      <div className="h-10 w-48 bg-zinc-300 dark:bg-zinc-800 rounded"></div>
+                      <div className="h-2 w-full bg-zinc-300 dark:bg-zinc-800 rounded"></div>
+                      <div className="h-2 w-3/4 bg-zinc-300 dark:bg-zinc-800 rounded"></div>
+                    </div>
+                    <div className="w-full md:w-64 h-40 bg-gradient-to-tr from-brand-600/30 to-brand-500/10 dark:from-zinc-900/60 dark:to-zinc-800/60 rounded-xl flex items-center justify-center">
+                      <svg className="w-24 h-24 text-brand-500 opacity-60 animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* VIEW 2: LOGIN */}
+            {currentView === 'login' && (
+              <div className="max-w-md mx-auto py-10 md:py-16">
+                <div className="glassmorphism p-8 rounded-2xl shadow-xl border border-zinc-200 dark:border-zinc-800">
+                  <div className="text-center mb-8">
+                    <h2 className="font-display text-2xl font-bold">Welcome back</h2>
+                    <p className="text-xs text-zinc-500 mt-2">Log in using demo credentials or scan biometrics</p>
+                  </div>
+                  
+                  <form onSubmit={handleLogin} className="space-y-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-zinc-400 mb-1">Email Address</label>
+                      <input required type="email" name="email" defaultValue="user@finance.com" className="w-full px-4 py-2.5 rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-sm focus:border-brand-500 outline-none" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-zinc-400 mb-1">Password</label>
+                      <input required type="password" name="password" defaultValue="user123" className="w-full px-4 py-2.5 rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-sm focus:border-brand-500 outline-none" />
+                    </div>
+                    <button type="submit" className="w-full py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-semibold text-sm rounded-lg transition">
+                      Sign In to Account
+                    </button>
+                  </form>
+
+                  {cmsSettings.enableBiometrics && (
+                    <div className="mt-6 pt-6 border-t border-zinc-200 dark:border-zinc-800 text-center">
+                      <p className="text-xs text-zinc-500 mb-4">Or use Face ID / Touch ID Biometric log in</p>
+                      <button onClick={() => setCurrentView('biometric')} className="w-12 h-12 rounded-full border border-zinc-200 dark:border-zinc-700 inline-flex items-center justify-center hover:border-brand-500 dark:hover:border-brand-500 hover:bg-brand-500/10 text-brand-500 transition">
+                        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 009 11a13.92 13.92 0 00-2.08-7.53l-.048-.088m6.095 8.01a8.914 8.914 0 013.38 5.585M13.95 3.05a9.004 9.004 0 013.49 14.505M8.823 4.542A11.979 11.979 0 0112 3c1.265 0 2.477.195 3.617.556" />
+                        </svg>
+                      </button>
+                    </div>
+                  )}
+
+                  <div className="flex items-center justify-between mt-6 text-xs text-zinc-500">
+                    <button onClick={() => setCurrentView('forgot')} className="hover:underline">Forgot password?</button>
+                    <button onClick={() => setCurrentView('signup')} className="hover:underline">Create new account</button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* VIEW 3: BIOMETRIC LOGIN SCAN */}
+            {currentView === 'biometric' && (
+              <div className="max-w-md mx-auto py-10 md:py-16 text-center animate-fade-in">
+                <div className="glassmorphism p-8 rounded-2xl shadow-xl border border-zinc-200 dark:border-zinc-800 flex flex-col items-center">
+                  <h3 className="font-display text-xl font-bold mb-2">Simulating Biometric ID</h3>
+                  <p className="text-xs text-zinc-500 mb-8">Scan your facial signature or touch fingerprint reader to authenticate.</p>
+                  
+                  {/* Visual pulsing face scanner */}
+                  <div className="relative w-44 h-44 rounded-2xl border-2 border-zinc-200 dark:border-zinc-700 flex items-center justify-center overflow-hidden mb-8">
+                    {scanState === 'idle' && (
+                      <svg className="w-24 h-24 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 009 11a13.92 13.92 0 00-2.08-7.53l-.048-.088m6.095 8.01a8.914 8.914 0 013.38 5.585M13.95 3.05a9.004 9.004 0 013.49 14.505" />
+                      </svg>
+                    )}
+                    
+                    {scanState === 'scanning' && (
+                      <>
+                        <svg className="w-24 h-24 text-brand-500 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 009 11a13.92 13.92 0 00-2.08-7.53l-.048-.088m6.095 8.01a8.914 8.914 0 013.38 5.585M13.95 3.05a9.004 9.004 0 013.49 14.505" />
+                        </svg>
+                        <div className="absolute left-0 right-0 h-0.5 bg-brand-500 animate-scan"></div>
+                      </>
+                    )}
+
+                    {scanState === 'success' && (
+                      <div className="flex flex-col items-center text-brand-500 animate-pulse">
+                        <svg className="w-20 h-20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span className="text-xs font-semibold mt-2">Authenticated</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex flex-col gap-3 w-full">
+                    {scanState === 'idle' && (
+                      <button onClick={runBiometricScan} className="w-full py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-semibold text-sm rounded-lg transition">
+                        Start Scan
+                      </button>
+                    )}
+                    <button onClick={() => setCurrentView('login')} className="w-full py-2 bg-zinc-200 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 text-xs rounded-lg">
+                      Cancel and use Password
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* VIEW 4: DASHBOARD (MAIN PANEL) */}
+            {currentView === 'dashboard' && currentUser && (
+              <div className="space-y-6 animate-fade-in">
+                {/* Dashboard Summary Greeting Card */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-2xl bg-gradient-to-tr from-brand-600 to-emerald-600 text-white shadow-xl glow-brand">
+                  <div>
+                    <h2 className="font-display text-2xl font-bold">Hello, {currentUser.name}!</h2>
+                    <p className="text-xs opacity-90 mt-1">Here is a quick look at your financial health. Keep spending under budget!</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <button onClick={() => setShowAddTransactionModal(true)} className="px-4 py-2 bg-white text-brand-700 font-semibold text-xs rounded-xl shadow hover:bg-zinc-100 transition flex items-center gap-1">
+                      {renderIcon('plus', 'w-4 h-4')} Add Transaction
+                    </button>
+                    {cmsSettings.enableExport && (
+                      <button onClick={exportToExcel} className="px-4 py-2 bg-brand-700 text-white border border-brand-500/30 font-semibold text-xs rounded-xl hover:bg-brand-800 transition flex items-center gap-1">
+                        Export Report
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* STATS TILES */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="glassmorphism p-5 rounded-2xl border flex flex-col justify-between">
+                    <div>
+                      <span className="text-zinc-500 dark:text-zinc-400 text-xs font-medium uppercase tracking-wider">Total Income</span>
+                      <h3 className="font-display text-xl md:text-2xl font-bold text-emerald-500 dark:text-brand-500 mt-1">{formatVal(stats.income)}</h3>
+                    </div>
+                    <span className="text-[10px] text-zinc-400 mt-2 block">Aggregated family sources</span>
+                  </div>
+                  
+                  <div className="glassmorphism p-5 rounded-2xl border flex flex-col justify-between">
+                    <div>
+                      <span className="text-zinc-500 dark:text-zinc-400 text-xs font-medium uppercase tracking-wider">Total Expenses</span>
+                      <h3 className="font-display text-xl md:text-2xl font-bold text-rose-500 mt-1">{formatVal(stats.expenses)}</h3>
+                    </div>
+                    <span className="text-[10px] text-zinc-400 mt-2 block">Across all categories</span>
+                  </div>
+
+                  <div className="glassmorphism p-5 rounded-2xl border flex flex-col justify-between">
+                    <div>
+                      <span className="text-zinc-500 dark:text-zinc-400 text-xs font-medium uppercase tracking-wider">Savings Bal</span>
+                      <h3 className="font-display text-xl md:text-2xl font-bold text-brand-500 mt-1">{formatVal(stats.savings)}</h3>
+                    </div>
+                    <div className="mt-2 flex items-center gap-2">
+                      <span className="px-1.5 py-0.5 text-[9px] font-semibold bg-brand-500/10 text-brand-500 rounded">
+                        {stats.savingsPercent.toFixed(0)}% saved
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="glassmorphism p-5 rounded-2xl border flex flex-col justify-between">
+                    <div>
+                      <span className="text-zinc-500 dark:text-zinc-400 text-xs font-medium uppercase tracking-wider">Lent vs Borrowed</span>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-xs text-emerald-500">Lent: {formatVal(stats.lend)}</span>
+                        <span className="text-xs text-rose-500">Borrow: {formatVal(stats.borrow)}</span>
+                      </div>
+                    </div>
+                    <span className="text-[10px] text-zinc-400 mt-2 block">Borrow/Lend outstanding</span>
+                  </div>
+                </div>
+
+                {/* GRAPH SECTION & RECENT TRANSACTIONS */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  {/* Expense categories donut */}
+                  <div className="glassmorphism p-5 rounded-2xl border lg:col-span-1 flex flex-col justify-between min-h-[300px]">
+                    <h4 className="font-semibold text-sm mb-4">Category-wise Share</h4>
+                    <div className="relative flex-1 flex items-center justify-center">
+                      <canvas ref={chartRef} className="max-w-[200px] max-h-[200px]"></canvas>
+                    </div>
+                  </div>
+
+                  {/* Recent transactions list */}
+                  <div className="glassmorphism p-5 rounded-2xl border lg:col-span-2 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-semibold text-sm">Recent Ledger Entries</h4>
+                      <button onClick={() => setCurrentView('expenses')} className="text-xs text-brand-500 hover:underline">View Ledger</button>
+                    </div>
+
+                    <div className="divide-y divide-zinc-200 dark:divide-zinc-800">
+                      {transactions.filter(t => t.userId === currentUser.id).slice(0, 5).map(t => {
+                        const cat = categories.find(c => c.id === t.categoryId) || { name: 'Other', color: '#71717a', icon: 'help-circle' };
+                        return (
+                          <div key={t.id} className="py-3 flex items-center justify-between text-xs">
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white" style={{ backgroundColor: cat.color }}>
+                                {renderIcon(cat.icon, "w-4 h-4")}
+                              </div>
+                              <div>
+                                <h5 className="font-semibold">{t.notes || cat.name}</h5>
+                                <p className="text-[10px] text-zinc-500">{t.date} &bull; {t.familyMember || 'Self'}</p>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <span className={`font-semibold ${t.type === 'income' ? 'text-emerald-500' : 'text-zinc-400'}`}>
+                                {t.type === 'income' ? '+' : '-'}{formatVal(t.amount)}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+
+                {/* BUDGET TRACKING LIMITS AND REMINDERS */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  {/* Budget Progress limits */}
+                  <div className="glassmorphism p-5 rounded-2xl border lg:col-span-2 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-semibold text-sm">Budget limits progress</h4>
+                      <button onClick={() => setCurrentView('budgets')} className="text-xs text-brand-500 hover:underline">Set Limits</button>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {budgets.filter(b => b.userId === currentUser.id).slice(0, 4).map(b => {
+                        const cat = categories.find(c => c.id === b.categoryId) || { name: 'Other', color: '#71717a' };
+                        const spent = transactions
+                          .filter(t => t.userId === currentUser.id && t.type === 'expense' && t.categoryId === b.categoryId)
+                          .reduce((sum, t) => sum + t.amount, 0);
+                        const percent = Math.min((spent / b.limitAmount) * 100, 100);
+                        
+                        // Progress color logic
+                        let progressColor = 'bg-brand-500';
+                        if (percent >= 100) progressColor = 'bg-red-500';
+                        else if (percent >= 90) progressColor = 'bg-amber-500';
+                        else if (percent >= 80) progressColor = 'bg-yellow-500';
+
+                        return (
+                          <div key={b.id} className="p-3.5 rounded-xl bg-zinc-100/50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-xs">
+                            <div className="flex justify-between font-semibold mb-2">
+                              <span>{cat.name}</span>
+                              <span className={percent >= 100 ? 'text-red-500 font-bold' : ''}>{percent.toFixed(0)}%</span>
+                            </div>
+                            <div className="w-full bg-zinc-200 dark:bg-zinc-800 h-2.5 rounded-full overflow-hidden mb-2">
+                              <div className={`h-full rounded-full transition-all duration-500 ${progressColor}`} style={{ width: `${percent}%` }}></div>
+                            </div>
+                            <div className="flex justify-between text-[10px] text-zinc-500">
+                              <span>Spent: {formatVal(spent)}</span>
+                              <span>Limit: {formatVal(b.limitAmount)}</span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Upcoming notifications list */}
+                  <div className="glassmorphism p-5 rounded-2xl border space-y-4">
+                    <h4 className="font-semibold text-sm">Actionable reminders</h4>
+                    
+                    <div className="space-y-3">
+                      {notifications.slice(0, 4).map((n, idx) => (
+                        <div key={idx} className="flex gap-2.5 text-xs">
+                          <div className={`w-1.5 h-auto rounded ${n.type === 'critical' ? 'bg-red-500' : n.type === 'warning' ? 'bg-amber-500' : 'bg-blue-500'}`}></div>
+                          <div>
+                            <h5 className="font-semibold">{n.title}</h5>
+                            <p className="text-[10px] text-zinc-500">{n.message}</p>
+                          </div>
+                        </div>
+                      ))}
+                      {notifications.length === 0 && (
+                        <p className="text-xs text-zinc-500 text-center py-6">No pending reminders. You are up to date! 🌟</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            )}
+
+            {/* VIEW 5: EXPENSES LEDGER LIST */}
+            {currentView === 'expenses' && currentUser && (
+              <div className="space-y-6 animate-fade-in">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div>
+                    <h2 className="font-display text-2xl font-bold">Ledger Transactions</h2>
+                    <p className="text-xs text-zinc-500 mt-1">Manage incomes, expenses, categories, filters and attachments</p>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <button onClick={() => setShowAddTransactionModal(true)} className="px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs rounded-xl shadow transition flex items-center gap-1">
+                      {renderIcon('plus', 'w-4.5 h-4.5')} New Entry
+                    </button>
+                    {cmsSettings.enableExport && (
+                      <button onClick={exportToExcel} className="px-4 py-2.5 bg-zinc-200 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 text-xs font-semibold rounded-xl hover:bg-zinc-300 dark:hover:bg-zinc-700 transition">
+                        Export CSV
+                      </button>
+                    )}
+                    <button onClick={() => setShowPrintModal(true)} className="px-4 py-2.5 bg-zinc-200 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 text-xs font-semibold rounded-xl hover:bg-zinc-300 dark:hover:bg-zinc-700 transition">
+                      Print PDF Report
+                    </button>
+                  </div>
+                </div>
+
+                {/* Filter section */}
+                <div className="glassmorphism p-4 rounded-xl border grid grid-cols-1 md:grid-cols-4 gap-4 text-xs">
+                  <div>
+                    <label className="block text-zinc-400 mb-1 font-semibold">Search notes/tags</label>
+                    <input type="text" placeholder="Search..." className="w-full bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-zinc-400 mb-1 font-semibold">Type</label>
+                    <select className="w-full bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 outline-none">
+                      <option value="all">All Entries</option>
+                      <option value="income">Income Only</option>
+                      <option value="expense">Expense Only</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-zinc-400 mb-1 font-semibold">Category</label>
+                    <select className="w-full bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 outline-none">
+                      <option value="all">All Categories</option>
+                      {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-zinc-400 mb-1 font-semibold">Family sync</label>
+                    <select className="w-full bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 outline-none">
+                      <option value="all">All Members</option>
+                      {currentUser.familyMembers?.map(m => <option key={m} value={m}>{m}</option>)}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Large ledger table */}
+                <div className="glassmorphism rounded-2xl border overflow-x-auto">
+                  <table className="w-full text-left text-xs border-collapse">
+                    <thead>
+                      <tr className="border-b border-zinc-200 dark:border-zinc-800 bg-zinc-100/50 dark:bg-zinc-900/60 font-semibold text-zinc-500">
+                        <th className="p-4">Type</th>
+                        <th className="p-4">Date</th>
+                        <th className="p-4">Category</th>
+                        <th className="p-4">Family Member</th>
+                        <th className="p-4">Notes & Tags</th>
+                        <th className="p-4 text-right">Amount</th>
+                        <th className="p-4 text-center">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
+                      {transactions.filter(t => t.userId === currentUser.id).map(t => {
+                        const cat = categories.find(c => c.id === t.categoryId) || { name: 'Other', color: '#71717a', icon: 'help-circle' };
+                        return (
+                          <tr key={t.id} className="hover:bg-zinc-100/30 dark:hover:bg-zinc-900/20 transition">
+                            <td className="p-4 font-semibold capitalize">
+                              <span className={`px-2 py-0.5 rounded text-[10px] ${t.type === 'income' ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' : 'bg-zinc-500/10 text-zinc-400 border border-zinc-500/10'}`}>
+                                {t.type}
+                              </span>
+                            </td>
+                            <td className="p-4 text-zinc-400">{t.date}</td>
+                            <td className="p-4">
+                              <div className="flex items-center gap-2">
+                                <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: cat.color }}></span>
+                                <span>{cat.name}</span>
+                              </div>
+                            </td>
+                            <td className="p-4 text-zinc-400">{t.familyMember || 'Self'}</td>
+                            <td className="p-4">
+                              <div>
+                                <p className="font-medium">{t.notes}</p>
+                                <div className="flex gap-1 mt-1">
+                                  {t.tags?.map(tag => (
+                                    <span key={tag} className="bg-zinc-200/50 dark:bg-zinc-800 text-zinc-500 text-[9px] px-1 rounded">{tag}</span>
+                                  ))}
+                                </div>
+                              </div>
+                            </td>
+                            <td className="p-4 text-right font-bold">
+                              <span className={t.type === 'income' ? 'text-emerald-500' : 'text-zinc-200'}>
+                                {t.type === 'income' ? '+' : '-'}{formatVal(t.amount)}
+                              </span>
+                            </td>
+                            <td className="p-4 text-center">
+                              <button onClick={() => {
+                                setTransactions(transactions.filter(tr => tr.id !== t.id));
+                              }} className="text-rose-500 hover:text-rose-700 transition">
+                                Delete
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* VIEW 6: BUDGET MANAGER */}
+            {currentView === 'budgets' && currentUser && (
+              <div className="space-y-6 animate-fade-in">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="font-display text-2xl font-bold">Category Budgets</h2>
+                    <p className="text-xs text-zinc-500 mt-1">Configure spending caps and trigger automated alerts at 80%, 90% and 100%</p>
+                  </div>
+                  <button onClick={() => setShowAddBudgetModal(true)} className="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs rounded-xl shadow transition">
+                    Configure Limit
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {budgets.filter(b => b.userId === currentUser.id).map(b => {
+                    const cat = categories.find(c => c.id === b.categoryId) || { name: 'Other', color: '#71717a' };
+                    const spent = transactions
+                      .filter(t => t.userId === currentUser.id && t.type === 'expense' && t.categoryId === b.categoryId)
+                      .reduce((sum, t) => sum + t.amount, 0);
+                    const percent = (spent / b.limitAmount) * 100;
+                    
+                    let barColor = 'bg-brand-500';
+                    let warningText = null;
+
+                    if (percent >= 100) {
+                      barColor = 'bg-red-500';
+                      warningText = 'Critical limit reached! Overspending active.';
+                    } else if (percent >= 90) {
+                      barColor = 'bg-amber-500';
+                      warningText = 'Warning: Spending is at 90% capacity!';
+                    } else if (percent >= 80) {
+                      barColor = 'bg-yellow-500';
+                      warningText = 'Approaching limit (80% crossed)';
+                    }
+
+                    return (
+                      <div key={b.id} className="glassmorphism p-5 rounded-2xl border flex flex-col justify-between">
+                        <div>
+                          <div className="flex justify-between items-center mb-3">
+                            <span className="font-semibold text-sm">{cat.name} Limit</span>
+                            <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${percent >= 100 ? 'bg-red-500/10 text-red-400' : 'bg-brand-500/10 text-brand-500'}`}>
+                              {percent.toFixed(0)}%
+                            </span>
+                          </div>
+                          
+                          <div className="w-full bg-zinc-200 dark:bg-zinc-800 h-3 rounded-full overflow-hidden mb-3">
+                            <div className={`h-full rounded-full transition-all duration-300 ${barColor}`} style={{ width: `${Math.min(percent, 100)}%` }}></div>
+                          </div>
+
+                          <div className="flex justify-between text-xs text-zinc-500 mb-4">
+                            <span>Spent: {formatVal(spent)}</span>
+                            <span>Limit: {formatVal(b.limitAmount)}</span>
+                          </div>
+                        </div>
+
+                        {warningText && (
+                          <div className={`p-2.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 ${percent >= 100 ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}`}>
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                            <span>{warningText}</span>
+                          </div>
+                        )}
+
+                        <div className="mt-4 pt-4 border-t border-zinc-200 dark:border-zinc-800 text-right">
+                          <button onClick={() => {
+                            setBudgets(budgets.filter(bd => bd.id !== b.id));
+                          }} className="text-xs text-zinc-500 hover:text-red-500 transition">
+                            Remove Budget
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* VIEW 7: BORROW & LEND TRACKER */}
+            {currentView === 'borrow-lend' && currentUser && (
+              <div className="space-y-6 animate-fade-in">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="font-display text-2xl font-bold">Borrow & Lend Ledger</h2>
+                    <p className="text-xs text-zinc-500 mt-1">Keep track of money borrowed from or lent to other people, including status, alerts and repayment settlements.</p>
+                  </div>
+                  <button onClick={() => setShowAddLoanModal(true)} className="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs rounded-xl shadow transition">
+                    Record Loan Entry
+                  </button>
+                </div>
+
+                {/* Loan listing table */}
+                <div className="glassmorphism rounded-2xl border overflow-x-auto">
+                  <table className="w-full text-left text-xs border-collapse">
+                    <thead>
+                      <tr className="border-b border-zinc-200 dark:border-zinc-800 bg-zinc-100/50 dark:bg-zinc-900/60 font-semibold text-zinc-500">
+                        <th className="p-4">Person</th>
+                        <th className="p-4">Type</th>
+                        <th className="p-4">Amount</th>
+                        <th className="p-4">Due Date</th>
+                        <th className="p-4">Status</th>
+                        <th className="p-4">Notes</th>
+                        <th className="p-4 text-center">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
+                      {loans.filter(l => l.userId === currentUser.id).map(l => {
+                        const isOverdue = l.status === 'pending' && new Date(l.dueDate) < new Date();
+                        const displayStatus = isOverdue ? 'overdue' : l.status;
+
+                        return (
+                          <tr key={l.id} className="hover:bg-zinc-100/30 dark:hover:bg-zinc-900/20 transition">
+                            <td className="p-4 font-semibold text-sm">{l.personName}</td>
+                            <td className="p-4 capitalize">
+                              <span className={`px-2 py-0.5 rounded text-[10px] ${l.type === 'lend' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'}`}>
+                                {l.type === 'lend' ? 'Lent (To Collect)' : 'Borrowed (To Pay)'}
+                              </span>
+                            </td>
+                            <td className="p-4 font-bold text-sm">{formatVal(l.amount)}</td>
+                            <td className="p-4 text-zinc-400">{l.dueDate}</td>
+                            <td className="p-4">
+                              <span className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider ${
+                                displayStatus === 'paid' ? 'bg-emerald-500/15 text-emerald-500' :
+                                displayStatus === 'overdue' ? 'bg-red-500/15 text-red-500 animate-pulse' :
+                                'bg-amber-500/15 text-amber-500'
+                              }`}>
+                                {displayStatus}
+                              </span>
+                            </td>
+                            <td className="p-4 text-zinc-400 italic max-w-xs truncate">{l.notes || 'No description'}</td>
+                            <td className="p-4 text-center">
+                              {l.status === 'pending' ? (
+                                <button 
+                                  onClick={() => {
+                                    // Settle the loan
+                                    const updated = loans.map(ln => ln.id === l.id ? { ...ln, status: 'paid' } : ln);
+                                    setLoans(updated);
+                                    
+                                    // Inject dynamic payment transaction
+                                    const settlementT = {
+                                      id: `t-${Date.now()}`,
+                                      userId: currentUser.id,
+                                      type: l.type === 'lend' ? 'income' : 'expense',
+                                      amount: l.amount,
+                                      categoryId: 'cat-10', // Other category
+                                      date: new Date().toISOString().split('T')[0],
+                                      notes: `Loan settlement: ${l.type === 'lend' ? 'Received from' : 'Paid to'} ${l.personName}`,
+                                      familyMember: 'Self',
+                                      tags: ['LoanSettlement']
+                                    };
+                                    setTransactions([settlementT, ...transactions]);
+                                  }} 
+                                  className="px-2.5 py-1 bg-brand-500/10 hover:bg-brand-500 text-brand-500 hover:text-white rounded text-[10px] font-bold border border-brand-500/20 transition"
+                                >
+                                  Mark Settled
+                                </button>
+                              ) : (
+                                <span className="text-zinc-500 font-medium">Fully Settled</span>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* VIEW 8: ADMIN CMS MANAGEMENT PANEL */}
+            {currentView === 'admin-cms' && currentUser?.role === 'admin' && (
+              <div className="space-y-6 animate-fade-in">
+                <div>
+                  <h2 className="font-display text-2xl font-bold">Admin CMS Center</h2>
+                  <p className="text-xs text-zinc-500 mt-1">Control client-side system configurations, toggle modules, define dynamic banners, edit categories, and review analytic logs.</p>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  {/* Dynamic system feature toggles */}
+                  <div className="glassmorphism p-5 rounded-2xl border space-y-4">
+                    <h3 className="font-semibold text-sm border-b border-zinc-200 dark:border-zinc-800 pb-2">Client Features Toggles</h3>
+                    
+                    <div className="space-y-3.5 text-xs">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h4 className="font-semibold">Simulated Biometrics Access</h4>
+                          <p className="text-[10px] text-zinc-500">Allow users to log in with simulated FaceID scans.</p>
+                        </div>
+                        <input type="checkbox" checked={cmsSettings.enableBiometrics} onChange={(e) => setCmsSettings({ ...cmsSettings, enableBiometrics: e.target.checked })} className="w-4 h-4 rounded text-brand-500" />
+                      </div>
+                      
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h4 className="font-semibold">Borrow & Lend Ledger</h4>
+                          <p className="text-[10px] text-zinc-500">Enable borrowing and lending accounts tracker.</p>
+                        </div>
+                        <input type="checkbox" checked={cmsSettings.enableBorrowLend} onChange={(e) => setCmsSettings({ ...cmsSettings, enableBorrowLend: e.target.checked })} className="w-4 h-4 rounded text-brand-500" />
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h4 className="font-semibold">Recurring Incomes/Expenses</h4>
+                          <p className="text-[10px] text-zinc-500">Let users set recurring weekly or monthly transactions.</p>
+                        </div>
+                        <input type="checkbox" checked={cmsSettings.enableRecurring} onChange={(e) => setCmsSettings({ ...cmsSettings, enableRecurring: e.target.checked })} className="w-4 h-4 rounded text-brand-500" />
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h4 className="font-semibold">Report Exporters</h4>
+                          <p className="text-[10px] text-zinc-500">Enable direct file downloads for PDF and Excel CSV.</p>
+                        </div>
+                        <input type="checkbox" checked={cmsSettings.enableExport} onChange={(e) => setCmsSettings({ ...cmsSettings, enableExport: e.target.checked })} className="w-4 h-4 rounded text-brand-500" />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Banner alerts copy setup */}
+                  <div className="glassmorphism p-5 rounded-2xl border flex flex-col justify-between">
+                    <div className="space-y-4">
+                      <h3 className="font-semibold text-sm border-b border-zinc-200 dark:border-zinc-800 pb-2">Dashboard System Alert Banner</h3>
+                      
+                      <div className="space-y-3 text-xs">
+                        <div className="flex items-center gap-2">
+                          <input type="checkbox" checked={cmsSettings.showDashboardBanner} onChange={(e) => setCmsSettings({ ...cmsSettings, showDashboardBanner: e.target.checked })} />
+                          <label className="font-semibold">Display banner on User Dashboard</label>
+                        </div>
+                        <div>
+                          <label className="block text-zinc-400 mb-1 font-semibold">Banner Message Copy</label>
+                          <textarea 
+                            value={cmsSettings.dashboardBannerText} 
+                            onChange={(e) => setCmsSettings({ ...cmsSettings, dashboardBannerText: e.target.value })}
+                            rows="3" 
+                            className="w-full bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg p-2 outline-none text-xs"
+                          ></textarea>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Currencies exchange rate setup */}
+                  <div className="glassmorphism p-5 rounded-2xl border space-y-4">
+                    <h3 className="font-semibold text-sm border-b border-zinc-200 dark:border-zinc-800 pb-2">Currencies exchange relative to USD</h3>
+                    
+                    <div className="space-y-3.5 text-xs max-h-48 overflow-y-auto">
+                      {cmsSettings.currencies.map(curr => (
+                        <div key={curr.code} className="flex items-center justify-between">
+                          <span className="font-bold">{curr.code} ({curr.symbol})</span>
+                          <input 
+                            type="number" 
+                            step="0.01" 
+                            value={curr.rate} 
+                            onChange={(e) => {
+                              const updated = cmsSettings.currencies.map(cu => cu.code === curr.code ? { ...cu, rate: parseFloat(e.target.value) || 1 } : cu);
+                              setCmsSettings({ ...cmsSettings, currencies: updated });
+                            }}
+                            className="w-24 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded px-2 py-1 text-xs outline-none"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* System category managers and user list */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  {/* Category editor */}
+                  <div className="glassmorphism p-5 rounded-2xl border lg:col-span-2 space-y-4">
+                    <h3 className="font-semibold text-sm border-b border-zinc-200 dark:border-zinc-800 pb-2">Global System Categories</h3>
+                    
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                      {categories.map(cat => (
+                        <div key={cat.id} className="p-3 rounded-lg border border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="w-3.5 h-3.5 rounded-full" style={{ backgroundColor: cat.color }}></span>
+                            <span className="font-medium">{cat.name}</span>
+                          </div>
+                          <button 
+                            onClick={() => setCategories(categories.filter(c => c.id !== cat.id))}
+                            className="text-rose-500 hover:text-rose-700"
+                          >
+                            &times;
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Simulation User DB */}
+                  <div className="glassmorphism p-5 rounded-2xl border space-y-4">
+                    <h3 className="font-semibold text-sm border-b border-zinc-200 dark:border-zinc-800 pb-2">Active Profiles DB</h3>
+                    
+                    <div className="divide-y divide-zinc-200 dark:divide-zinc-800">
+                      {users.map(u => (
+                        <div key={u.id} className="py-2.5 flex items-center justify-between text-xs">
+                          <div>
+                            <h5 className="font-semibold">{u.name}</h5>
+                            <p className="text-[10px] text-zinc-500">{u.email}</p>
+                          </div>
+                          <span className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider ${u.role === 'admin' ? 'bg-purple-500/10 text-purple-400 border border-purple-500/20' : 'bg-brand-500/10 text-brand-500 border border-brand-500/20'}`}>
+                            {u.role}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            )}
+
+          </main>
+
+          {/* --- MODAL DIALOGS --- */}
+
+          {/* TRANSACTION ADD MODAL */}
+          {showAddTransactionModal && (
+            <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
+              <div className="w-full max-w-md bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-2xl p-6 text-xs text-zinc-800 dark:text-zinc-200">
+                <div className="flex justify-between items-center border-b border-zinc-200 dark:border-zinc-800 pb-3 mb-4">
+                  <h3 className="text-sm font-bold font-display">New Ledger Transaction Entry</h3>
+                  <button onClick={() => setShowAddTransactionModal(false)} className="text-zinc-500 hover:text-zinc-700 font-bold">&times;</button>
+                </div>
+                
+                <form onSubmit={handleAddTransaction} className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-zinc-400 mb-1 font-semibold">Type</label>
+                      <select name="type" className="w-full bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg p-2.5 outline-none">
+                        <option value="expense">Expense</option>
+                        <option value="income">Income</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-zinc-400 mb-1 font-semibold">Amount (USD)</label>
+                      <input required type="number" step="0.01" name="amount" placeholder="0.00" className="w-full bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg p-2.5 outline-none font-bold" />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-zinc-400 mb-1 font-semibold">Category</label>
+                      <select name="categoryId" className="w-full bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg p-2.5 outline-none">
+                        {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-zinc-400 mb-1 font-semibold">Date</label>
+                      <input required type="date" name="date" defaultValue={new Date().toISOString().split('T')[0]} className="w-full bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg p-2.5 outline-none" />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-zinc-400 mb-1 font-semibold">Family Sync</label>
+                      <select name="familyMember" className="w-full bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg p-2.5 outline-none">
+                        {currentUser.familyMembers?.map(m => <option key={m} value={m}>{m}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-zinc-400 mb-1 font-semibold">Tags (comma separated)</label>
+                      <input type="text" name="tags" placeholder="Food, Dinner, Grocery" className="w-full bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg p-2.5 outline-none" />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-zinc-400 mb-1 font-semibold">Notes</label>
+                    <textarea name="notes" placeholder="Detailed description..." rows="2" className="w-full bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg p-2 outline-none"></textarea>
+                  </div>
+
+                  {cmsSettings.enableRecurring && (
+                    <div className="p-3 bg-zinc-100 dark:bg-zinc-800 rounded-xl border border-zinc-200 dark:border-zinc-700 space-y-2">
+                      <div className="flex items-center gap-2">
+                        <input type="checkbox" id="isRecurring" name="isRecurring" />
+                        <label htmlFor="isRecurring" className="font-semibold">Setup as Recurring Transaction</label>
+                      </div>
+                      <div>
+                        <select name="frequency" className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded p-1.5 outline-none">
+                          <option value="weekly">Weekly</option>
+                          <option value="monthly">Monthly</option>
+                          <option value="yearly">Yearly</option>
+                        </select>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="pt-2 flex justify-end gap-2">
+                    <button type="button" onClick={() => setShowAddTransactionModal(false)} className="px-4 py-2 bg-zinc-200 dark:bg-zinc-850 hover:bg-zinc-300 dark:hover:bg-zinc-800 text-zinc-850 dark:text-zinc-200 rounded-lg">Cancel</button>
+                    <button type="submit" className="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-lg shadow transition">Post Transaction</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* BUDGET CONFIGURE MODAL */}
+          {showAddBudgetModal && (
+            <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+              <div className="w-full max-w-sm bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-2xl p-6 text-xs text-zinc-800 dark:text-zinc-200">
+                <div className="flex justify-between items-center border-b border-zinc-200 dark:border-zinc-800 pb-3 mb-4">
+                  <h3 className="text-sm font-bold font-display">Configure Budget Cap</h3>
+                  <button onClick={() => setShowAddBudgetModal(false)} className="text-zinc-500 hover:text-zinc-700 font-bold">&times;</button>
+                </div>
+                
+                <form onSubmit={handleAddBudget} className="space-y-4">
+                  <div>
+                    <label className="block text-zinc-400 mb-1 font-semibold">Select Category</label>
+                    <select name="categoryId" className="w-full bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg p-2.5 outline-none">
+                      {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-zinc-400 mb-1 font-semibold">Limit Amount (USD)</label>
+                    <input required type="number" name="limitAmount" placeholder="0.00" className="w-full bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg p-2.5 outline-none font-bold" />
+                  </div>
+
+                  <div className="pt-2 flex justify-end gap-2">
+                    <button type="button" onClick={() => setShowAddBudgetModal(false)} className="px-4 py-2 bg-zinc-200 dark:bg-zinc-850 hover:bg-zinc-300 dark:hover:bg-zinc-800 text-zinc-850 dark:text-zinc-200 rounded-lg">Cancel</button>
+                    <button type="submit" className="px-5 py-2 bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-lg transition">Apply limit</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* LOAN RECORD MODAL */}
+          {showAddLoanModal && (
+            <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+              <div className="w-full max-w-sm bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-2xl p-6 text-xs text-zinc-800 dark:text-zinc-200">
+                <div className="flex justify-between items-center border-b border-zinc-200 dark:border-zinc-800 pb-3 mb-4">
+                  <h3 className="text-sm font-bold font-display">Record Loan Ledger</h3>
+                  <button onClick={() => setShowAddLoanModal(false)} className="text-zinc-500 hover:text-zinc-700 font-bold">&times;</button>
+                </div>
+                
+                <form onSubmit={handleAddLoan} className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-zinc-400 mb-1 font-semibold">Loan Type</label>
+                      <select name="type" className="w-full bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg p-2.5 outline-none">
+                        <option value="lend">Lend (Give to Collect)</option>
+                        <option value="borrow">Borrow (Receive to Pay)</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-zinc-400 mb-1 font-semibold">Amount (USD)</label>
+                      <input required type="number" name="amount" placeholder="0.00" className="w-full bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg p-2.5 outline-none font-bold" />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-zinc-400 mb-1 font-semibold">Person Name</label>
+                    <input required type="text" name="personName" placeholder="e.g. Sam Johnson" className="w-full bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg p-2.5 outline-none" />
+                  </div>
+
+                  <div>
+                    <label className="block text-zinc-400 mb-1 font-semibold">Due Date</label>
+                    <input required type="date" name="dueDate" defaultValue={new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]} className="w-full bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg p-2.5 outline-none" />
+                  </div>
+
+                  <div>
+                    <label className="block text-zinc-400 mb-1 font-semibold">Notes</label>
+                    <textarea name="notes" placeholder="Splitting dinner, rental helper..." className="w-full bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg p-2.5 outline-none"></textarea>
+                  </div>
+
+                  <div className="pt-2 flex justify-end gap-2">
+                    <button type="button" onClick={() => setShowAddLoanModal(false)} className="px-4 py-2 bg-zinc-200 dark:bg-zinc-850 hover:bg-zinc-300 dark:hover:bg-zinc-800 text-zinc-850 dark:text-zinc-200 rounded-lg">Cancel</button>
+                    <button type="submit" className="px-5 py-2 bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-lg transition">Apply Record</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* PDF EXPORT PRINT PREVIEW DIALOG */}
+          {showPrintModal && (
+            <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+              <div className="w-full max-w-2xl bg-white text-zinc-900 rounded-2xl shadow-2xl p-6 text-xs">
+                <div className="flex justify-between items-center border-b border-zinc-200 pb-3 mb-4">
+                  <h3 className="text-sm font-bold text-zinc-800">Printable Financial Ledger Report</h3>
+                  <button onClick={() => setShowPrintModal(false)} className="text-zinc-500 hover:text-zinc-700 font-bold">&times;</button>
+                </div>
+                
+                {/* Print area */}
+                <div className="border border-zinc-200 p-6 rounded-xl space-y-6 bg-white" id="printable-report">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h2 className="text-lg font-bold">APEXFINANCE LEDGER SUMMARY</h2>
+                      <p className="text-[10px] text-zinc-500">Report generated for {currentUser.name} on {new Date().toLocaleDateString()}</p>
+                    </div>
+                    <span className="text-sm font-bold text-brand-600">PREMIUM</span>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-4 border-y border-zinc-100 py-4 text-center">
+                    <div>
+                      <h4 className="text-[10px] text-zinc-400 uppercase">Total Incomes</h4>
+                      <p className="text-base font-bold text-emerald-600">{formatVal(stats.income)}</p>
+                    </div>
+                    <div>
+                      <h4 className="text-[10px] text-zinc-400 uppercase">Total Expenses</h4>
+                      <p className="text-base font-bold text-rose-600">{formatVal(stats.expenses)}</p>
+                    </div>
+                    <div>
+                      <h4 className="text-[10px] text-zinc-400 uppercase">Computed Savings</h4>
+                      <p className="text-base font-bold text-brand-600">{formatVal(stats.savings)}</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <h4 className="font-semibold text-zinc-700">Detailed Statement</h4>
+                    <table className="w-full text-left text-[10px]">
+                      <thead>
+                        <tr className="border-b border-zinc-200 text-zinc-400 font-semibold">
+                          <th className="py-1.5">Type</th>
+                          <th className="py-1.5">Date</th>
+                          <th className="py-1.5">Category</th>
+                          <th className="py-1.5">Notes</th>
+                          <th className="py-1.5 text-right">Amount</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {transactions.filter(t => t.userId === currentUser.id).map(t => {
+                          const cat = categories.find(c => c.id === t.categoryId)?.name || 'Other';
+                          return (
+                            <tr key={t.id} className="border-b border-zinc-100">
+                              <td className="py-1.5 capitalize font-semibold">{t.type}</td>
+                              <td className="py-1.5 text-zinc-500">{t.date}</td>
+                              <td className="py-1.5">{cat}</td>
+                              <td className="py-1.5 text-zinc-600">{t.notes}</td>
+                              <td className="py-1.5 text-right font-bold">{formatVal(t.amount)}</td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <div className="pt-4 flex justify-end gap-2">
+                  <button onClick={() => setShowPrintModal(false)} className="px-4 py-2 bg-zinc-100 hover:bg-zinc-205 text-zinc-800 rounded-lg">Close</button>
+                  <button onClick={() => window.print()} className="px-5 py-2 bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-lg shadow">Print Document</button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {renderBottomNav()}
+        </div>
+      );
+    }
+
+    // Render the React application
+    const rootElement = document.getElementById('root');
+    const root = ReactDOM.createRoot(rootElement);
+    root.render(<App />);
+  </script>
+</body>
+</html>
